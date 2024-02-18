@@ -1,7 +1,8 @@
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Snake {
-  public static enum Directions {
+  public enum Directions {
     UP,
     RIGHT,
     DOWN,
@@ -12,7 +13,17 @@ public class Snake {
   private int cordX = 100;
   private int cordY = 100;
   private int size = 25;
+  private int length = 1;
+
+  public int getLength() {
+    return length;
+  }
+  private ArrayList<Tail> tail = new ArrayList<>();
   private Directions direction = Directions.STAY;
+
+  public Directions getDirection() {
+    return direction;
+  }
 
   public Snake() {}
 
@@ -24,23 +35,52 @@ public class Snake {
 
   public void draw(Graphics g) {
     g.drawRect(cordX, cordY, size, size);
+    for (Tail value : tail) {
+      value.draw(g);
+    }
   }
 
-  Snake move() {
-
+  void move() {
+    for (int i = tail.size() - 1; i >= 1; --i) {
+      tail.get(i).move(tail.get(i - 1));
+    }
+    if (!tail.isEmpty()) {
+      tail.get(0).move(cordX, cordY);
+    }
     switch (direction) {
       case UP -> cordY -= size;
       case RIGHT -> cordX += size;
       case DOWN -> cordY += size;
       case LEFT -> cordX -= size;
     }
-
-    return this;
   }
 
-  Snake changeDirection(Directions direction) {
+  void changeDirection(Directions direction) {
     this.direction = direction;
+  }
 
-    return this;
+  void checkApple(Apple apple) {
+    if (cordX == apple.getCordX() && cordY == apple.getCordY()) {
+      length++;
+      apple.generateApple();
+
+      Tail tailPart = new Tail();
+      tail.add(tailPart);
+      for (int i = 0; i < tail.size(); i++) {
+        tail.get(i).setSize(15 + 10 * (tail.size() - i - 1) / tail.size());
+      }
+    }
+  }
+
+  boolean checkBorders() {
+    if (cordX >= 800 || cordX < 0 || cordY >= 800 || cordY < 0) {
+      return true;
+    }
+    for (Tail value : tail) {
+      if (value.getCordX() == cordX && value.getCordY() == cordY) {
+        return true;
+      }
+    }
+    return false;
   }
 }
